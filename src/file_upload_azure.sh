@@ -27,13 +27,12 @@ while getopts ":c:s:hn:f:" flag; do
         ;;
         c)
         c_name=$OPTARG
-        CONTAINER_NAME="$c_name"
-        export CONTAINER_NAME
+        export CONTAINER_NAME="$c_name"
+        
         ;;
         s)
         storage_acc=$OPTARG
-        STORAGE_ACC="$storage_acc"
-        export STORAGE_ACC
+        export STORAGE_ACC="$storage_acc"
         ;;
         n)
         f_name=$OPTARG
@@ -66,11 +65,11 @@ if [ $? -ne 0 ]; then
     fi
 fi
 
-if [ ! -v STORAGE_ACC ]; then
+if [ ! -v STORAGE_ACC ] || [ -z STORAGE_ACC ]; then
     echo "Storage Account not set. Check -h for more information"
     exit 1
 fi
-if [ ! -v CONTAINER_NAME ]; then
+if [ ! -v CONTAINER_NAME ] || [ -z CONTAINER_NAME ]; then
     echo "Container name not set. Check -h for more information"
     exit 1
 fi
