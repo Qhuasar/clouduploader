@@ -7,6 +7,7 @@ help_menu (){
     echo "-c     Set Container Name"
     echo "-s     Set Storage Acount"
     echo "-a     Set a configuration path"
+    echo "-o     Overwrites currently saved blob with the same name"
     echo "Configurations are saved by default at /etc/clouduploader/clouduploader.config"
 }
 
@@ -14,11 +15,14 @@ f_name=""
 f_path=""
 #if look_for_config = 2 it prevents the script from prompting about  the config file"
 look_for_config=0
-while getopts ":c:s:hn:f:a:" flag; do
+while getopts ":c:s:hn:f:a:o" flag; do
     case $flag in
         h) 
         help_menu
         exit 0
+        ;;
+        o)
+        export OVERWRITE_BLOB=1
         ;;
         a)
         export CONFIG_DEFAULT_PATH=$OPTARG
@@ -70,7 +74,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #checks if a file exists at the CONFIG_DEFAULT_PATH 
-echo "$look_for_config"
 if [ ! -f "$CONFIG_DEFAULT_PATH" ] && [[  "$look_for_config" < 2 ]]; then
     echo "No valid config file found at $CONFIG_DEFAULT_PATH. Do you wish to create one?"
     read -p "[Yes]/No: " create_config
@@ -117,7 +120,6 @@ if [ ! -v CONTAINER_NAME ] || [ -z CONTAINER_NAME ]; then
         esac
     done < "$CONFIG_DEFAULT_PATH"
 fi
-echo "$CONFIG_DEFAULT_PATH"
 if [ ! -v STORAGE_ACC ] || [ -z STORAGE_ACC ]; then
     echo "Storage Account not set. Check -h for more information"
     exit 1
@@ -126,15 +128,32 @@ if [ ! -v CONTAINER_NAME ] || [ -z CONTAINER_NAME ]; then
     echo "Container name not set. Check -h for more information"
     exit 1
 fi
-az storage blob upload \
-    --account-name "$STORAGE_ACC" \
-    --container-name "$CONTAINER_NAME" \
-    --name "$f_name" \
-    --file "$f_path" \
-    --auth-mode login
-if [ $? -ne 0 ]; then
-    echo "Error: Something went wrong uploading the file check your config file"
-    exit 1
-else 
-    echo "Sucessfuly Uploaded $f_name "
+if [[ $OVERWRITE_BLOB == 1 ]]; then
+    az storage blob upload \
+        --account-name "$STORAGE_ACC" \
+        --container-name "$CONTAINER_NAME" \
+        --name "$f_name" \
+        --file "$f_path" \
+        --auth-mode login \
+        --overwrite
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Something went wrong uploading the file check your config file"
+        exit 1
+    else 
+        echo "Sucessfuly Uploaded $f_name "
+    fi
+else
+    az storage blob upload \
+        --account-name "$STORAGE_ACC" \
+        --container-name "$CONTAINER_NAME" \
+        --name "$f_name" \
+        --file "$f_path" \
+        --auth-mode login
+    if [ $? -ne 0 ]; then
+        echo "Error: Something went wrong uploading the file check your config file"
+        exit 1
+    else 
+        echo "Sucessfuly Uploaded $f_name "
+    fi
 fi
