@@ -19,6 +19,6 @@ clouduploader [options] -f FILEPATH -n FILENAME <br>
 ## Configurations
 
 Configurations are saved by default at /etc/clouduploader/clouduploader.config<br>
-Configurations must be follow the following structure:<br>
+Configurations must follow the following structure:<br>
 container_name=<your_variable> <br>
 storage_account_name=<your_variable> <br>
